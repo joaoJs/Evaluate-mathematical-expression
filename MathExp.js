@@ -25,6 +25,13 @@ var calc = function (exp) {
 
 }
 
+
+
+
+
+
+
+// function to find parentheses and calculate what's inside
 var detectParentheses = function(exp) {
   console.log("\n")
   console.log("Expression in detectParentheses", exp);
@@ -87,6 +94,11 @@ var detectParentheses = function(exp) {
   }
 }
 
+
+
+
+
+// function to calculate sections
 var calcSections = function(section, indexes ) {
   //console.log("Section --> ", section);
   let hasMult = false;
@@ -110,29 +122,13 @@ var calcSections = function(section, indexes ) {
   let divRes = [];
   let nextOp;
   let nextOpInd;
+
   if (hasMult) {
-    splitted.forEach((n,i) => {
-      if (n === "*") {
-        indMult.push(i - 1);
-        multRes = splitted[i-1];
-        multRes *= splitted[i+1];
-        if (splitted[i+2] && splitted[i+2] === "*") {
-          while(splitted[i+2] === "*") {
-            i += 2;
-            multRes *= i+1;
-          }
-        }
-        if (splitted[i+2] && splitted[i+2] !== "*") {
-          nextOp = splitted[i+2];
-          nextOpInd = splitted[i+2];
-          splitted[indMult] = multRes;
-        } else if (!splitted[i+2]) {
-          splitted[indMult] = multRes;
-          console.log(splitted.slice(0, indMult[0] + 1));
-          splitted = splitted.slice(0, indMult[0] + 1);
-        }
-      }
-    });
+    splitted = calcMult(splitted);
+  }
+
+  if (hasDiv) {
+    splitted = calcMult(splitted);
   }
 
 
@@ -168,6 +164,82 @@ var calcSections = function(section, indexes ) {
   return res;
 }
 
+
+
+
+
+// function to find multiplications and calculate them
+var calcMult = function(splitted) {
+  let indMult = [];
+  let multRes = 1;
+  let nextOp;
+  let nextOpInd;
+
+  splitted.forEach((n,i) => {
+      if (n === "*") {
+        indMult.push(i - 1);
+        multRes = splitted[i-1];
+        multRes *= splitted[i+1];
+        if (splitted[i+2] && splitted[i+2] === "*") {
+          while(splitted[i+2] === "*") {
+            i += 2;
+            multRes *= i+1;
+          }
+        }
+        if (splitted[i+2] && splitted[i+2] !== "*") {
+          nextOp = splitted[i+2];
+          nextOpInd = splitted[i+2];
+          splitted[indMult] = multRes;
+        } else if (!splitted[i+2]) {
+          splitted[indMult] = multRes;
+          console.log(splitted.slice(0, indMult[0] + 1));
+          splitted = splitted.slice(0, indMult[0] + 1);
+        }
+      }
+    });
+
+    return splitted;
+
+}
+
+
+
+
+
+
+
+// function to fin divisions and calculate them
+var calcDiv = function(section) {
+  let indDiv = [];
+  let divRes = [];
+  let nextOp;
+  let nextOpInd;
+
+  splitted.forEach((n,i) => {
+      if (n === "/") {
+        indDiv.push(i - 1);
+        divRes = splitted[i-1];
+        divRes /= splitted[i+1];
+        if (splitted[i+2] && splitted[i+2] === "/") {
+          while(splitted[i+2] === "/") {
+            i += 2;
+            divRes /= i+1;
+          }
+        }
+        if (splitted[i+2] && splitted[i+2] !== "/") {
+          nextOp = splitted[i+2];
+          nextOpInd = splitted[i+2];
+          splitted[indDiv] = divRes;
+        } else if (!splitted[i+2]) {
+          splitted[indDiv] = divRes;
+          console.log(splitted.slice(0, indDiv[0] + 1));
+          splitted = splitted.slice(0, indDiv[0] + 1);
+        }
+      }
+    });
+
+    return splitted;
+}
 
 const expression = "(2 / (2 + -(56 - 55) * 3.33) * 4) - -6 -(7 + 6)";
 
