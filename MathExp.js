@@ -132,36 +132,39 @@ var calcSections = function(section, indexes ) {
   }
 
 
-  splitted.forEach(e => {
-    if ("+-/*".includes(e)) {
-      operations.push(e);
-    } else {
-      numbers.push(Number(e));
-    }
-  });
+  if (splitted !== undefined) {
+    splitted.forEach(e => {
+      if ("+-/*".includes(e)) {
+        operations.push(e);
+      } else {
+        numbers.push(Number(e));
+      }
+    });
 
-  console.log("");
-  console.log("---->>> Splitted after mult");
-  console.log(splitted);
+    console.log("");
+    console.log("---->>> Splitted after mult");
+    console.log(splitted);
 
-  var res = numbers.reduce((a,b) => {
-    var i = 0;
-    if (operations[i] === "+") {
-      i++;
-      return a + b;
-    } else if (operations[i] === "-") {
-      i++;
-      return a - b;
-    }
-    // else if (operations[i] === "*") {
-    //   i++;
-    //   return a * b;
-    // } else if (operations[i] === "/") {
-    //   i++;
-    //   return a / b;
-    // }
-  });
-  return res;
+    var res = numbers.reduce((a,b) => {
+      var i = 0;
+      if (operations[i] === "+") {
+        i++;
+        return a + b;
+      } else if (operations[i] === "-") {
+        i++;
+        return a - b;
+      }
+      // else if (operations[i] === "*") {
+      //   i++;
+      //   return a * b;
+      // } else if (operations[i] === "/") {
+      //   i++;
+      //   return a / b;
+      // }
+    });
+    console.log(res);
+    return res;
+  }
 }
 
 
@@ -175,30 +178,51 @@ var calcMult = function(splitted) {
   let nextOp;
   let nextOpInd;
 
-  splitted.forEach((n,i) => {
+  for (let i = 0; i < splitted.length; i++)  {
+    var n = splitted[i];
       if (n === "*") {
         indMult.push(i - 1);
         multRes = splitted[i-1];
         multRes *= splitted[i+1];
         if (splitted[i+2] && splitted[i+2] === "*") {
           while(splitted[i+2] === "*") {
+            console.log("");
+            console.log("Sharma");
             i += 2;
-            multRes *= i+1;
+            multRes *= splitted[i+1];
+            console.log(multRes);
           }
         }
         if (splitted[i+2] && splitted[i+2] !== "*") {
+          console.log("");
+          console.log("Dharba Sharwa");
           nextOp = splitted[i+2];
-          nextOpInd = splitted[i+2];
-          splitted[indMult] = multRes;
+          nextOpInd = i+2;
+          splitted[indMult[0]] = multRes;
+          splitted = splitted.slice(0, indMult[0]+1).concat(splitted.slice(nextOpInd, splitted.length));
+          console.log(splitted);
+          break;
         } else if (!splitted[i+2]) {
-          splitted[indMult] = multRes;
+          splitted[indMult[0]] = multRes;
           console.log(splitted.slice(0, indMult[0] + 1));
           splitted = splitted.slice(0, indMult[0] + 1);
         }
       }
-    });
+    };
 
-    return splitted;
+    if (splitted.includes("*")) {
+      console.log("");
+      console.log("contains: ")
+      console.log(splitted);
+      //return splitted;
+      calcMult(splitted);
+    }
+    else  {
+      console.log("HEREEEE!! ")
+      console.log(splitted);
+      calcSections(splitted.join(" "));
+      //return splitted;
+    }
 
 }
 
@@ -223,15 +247,16 @@ var calcDiv = function(section) {
         if (splitted[i+2] && splitted[i+2] === "/") {
           while(splitted[i+2] === "/") {
             i += 2;
-            divRes /= i+1;
+            divRes /= splitted[i+1];
           }
         }
         if (splitted[i+2] && splitted[i+2] !== "/") {
           nextOp = splitted[i+2];
-          nextOpInd = splitted[i+2];
-          splitted[indDiv] = divRes;
+          nextOpInd = i+2;
+          splitted[indDiv[0]] = divRes;
+          splitted = splitted.slice(0, indDiv[0]+1).concat(splitted.slice(nextOpInd, splitted.length));
         } else if (!splitted[i+2]) {
-          splitted[indDiv] = divRes;
+          splitted[indDiv[0]] = divRes;
           console.log(splitted.slice(0, indDiv[0] + 1));
           splitted = splitted.slice(0, indDiv[0] + 1);
         }
@@ -241,6 +266,13 @@ var calcDiv = function(section) {
     return splitted;
 }
 
-const expression = "(2 / (2 + -(56 - 55) * 3.33) * 4) - -6 -(7 + 6)";
+
+
+// var afterMD = function(splitted) {
+//   console.log("Inside MD: ")
+//   console.log(splitted);
+// }
+
+const expression = "(2 / (2 + -(56 - 55) * 3.33 * 1 * 2 + 2 + 3 * 2) * 4) - -6 -(7 + 6)";
 
 calc(expression);
