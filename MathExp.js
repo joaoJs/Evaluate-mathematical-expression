@@ -1,27 +1,30 @@
 var calc = function (exp) {
-  // exp = detectParentheses(exp);
-  // console.log("In the main function --> ", exp);
-  // // exp2 = detectParentheses(exp);
-  // // console.log("2nd --> ", exp2);
-  // // exp3 = detectParentheses(exp2);
-  // // console.log(exp3);
-  // // exp4 = detectParentheses(exp3);
-  // // console.log(exp4);
-
-  //make a copy
-
   const expCopy = exp;
-  let currentExp = exp;
-  while (exp.includes("(")) {
-    console.log("\n");
-    console.log("EXP --> ", exp);
-    currentExp = exp;
-    exp = detectParentheses(exp);
-  }
-  console.log("");
-  console.log("Res");
-  console.log(exp + " ----- " + currentExp);
-  console.log(calcSections(exp));
+  var test = detectParentheses(exp);
+  console.log(test);
+
+  // let currentExp = exp;
+  // while (exp.includes("(")) {
+  //   console.log("\n");
+  //   console.log("EXP --> ", exp);
+  //   currentExp = exp;
+  //   exp = detectParentheses(exp);
+  //   console.log("After --> ", exp);
+  // }
+  // console.log("");
+  // console.log("Res");
+  // console.log(exp + " --line 23--- " + currentExp);
+  // while (exp.includes("*")) {
+  //   console.log("RES line 25 -->  ", calcMult(exp.split(" ")));
+  //   //exp = currentExp.replace("(" + exp + ")")
+  //   exp = calcMult(exp.split(" "));
+  //   console.log("exp: ")
+  //   console.log(exp);
+  // }
+
+  // exp = expCopy.replace("(" + currentExp + ")", calcSections(exp));
+  // console.log("FInale 30 --> ",exp);
+
 
 }
 
@@ -34,64 +37,68 @@ var calc = function (exp) {
 // function to find parentheses and calculate what's inside
 var detectParentheses = function(exp) {
   console.log("\n")
-  console.log("Expression in detectParentheses", exp);
+  //console.log("Expression in detectParentheses", exp);
   var content = [];
   var start = [];
   var end = [];
   var countPar = 0;
   var sections = 0;
+  var countOpen = 0;
+  var countClose = 0;
+
+
+  // get the  values from the innermost parentheses
   for (let i = 0; i < exp.length; i++) {
     if (exp[i] === "(") {
       if (countPar === 0) {
         start.push(i);
+      } else if (countPar > 1) {
+        start[start.length-1] = i;
+      } if (countClose > 0) {
+        countClose--;
       }
       countPar++;
     }
     if (exp[i] === ")") {
-        countPar--;
-        if (countPar === 0) {
+        if (countClose === 0) {
           end.push(i);
+          countClose++;
         }
+        countPar = 0;
       }
   }
+
+  console.log(start, end);
+
+
+
   sections = start.length;
   for (i = 0; i < sections; i++) {
     content.push(exp.slice(start[i] + 1, end[i]));
   }
-  //console.log("Content --> ", content);
-  for (let i = 0; i < content.length; i++) {
-      const c = content[i];
-      // if (c.includes("(")) {
-      //   detectParentheses(c);
-      // } else {
-      //   // replace original
-      //   exp2 = exp.replace("(" + c + ")", calcSections(c));
-      //   console.log("exp2 --> ", exp2);
-      //   if (exp2.includes("(")) {
-      //     console.log("HERE! --> ", exp2);
-      //     var test = detectParentheses(exp2);
-      //   } else {
-      //     console.log("REs -->", calcSections(exp2));
-      //     return calcSections(exp2);
-      //   }
-      // }
-      //console.log("Cs -->  " , c);
-      if (!c.includes("(")) {
-        // replace original
-        exp = exp.replace("(" + c + ")", calcSections(c));
-        //console.log("exp --> ", exp);
-        return exp;
-      }
-  }
-  for (let i = 0; i < content.length; i++) {
-    const c = content[i];
-    if (c.includes("(")) {
-      //console.log(c);
-      return c;
-      // exp = exp.replace("(" + c + ")", detectParentheses(c));
-      // return exp;
+  console.log("Content --> ", content);
+
+  var res;
+
+  // calculate each innermost Array and replace original array
+  content.forEach(c => {
+    if (c.includes("*")) {
+      res = calcMult(c.split(" "));
+      res = calcSections(res);
+      exp = exp.replace("(" + c + ")", res);
+      console.log(res);
+    } else if (c.includes("/")) {
+      res = calcDiv(c.split(" "));
+      res = calcSections(res);
+      exp = exp.replace("(" + c + ")", res);
+      console.log(res);
+    } else {
+      res = calcSections(c);
+      exp = exp.replace("(" + c + ")", res);
+      console.log(res);
     }
-  }
+  });
+  return exp;
 }
 
 
@@ -99,37 +106,28 @@ var detectParentheses = function(exp) {
 
 
 // function to calculate sections
-var calcSections = function(section, indexes ) {
-  //console.log("Section --> ", section);
-  let hasMult = false;
-  let hasDiv = false;
-  if (section.includes("*")) {
-    hasMult = true;
-  } else if (section.includes("/")) {
-    hasDiv = true;
-  }
+var calcSections = function(section) {
+  var splitted;
   var numbers = [];
   var operations = [];
-  var splitted = section.split(" ");
-  console.log("Splitted", splitted);
+  if (!Array.isArray(section)) {
+    splitted = section.split(" ");
+  } else {
+    splitted = section;
+  }
+  //console.log("Splitted line 117 --> ", splitted);
 
 
   // make function for if has mult
 
-  let indMult = [];
-  let indDiv = [];
-  let multRes = 1;
-  let divRes = [];
-  let nextOp;
-  let nextOpInd;
 
-  if (hasMult) {
-    splitted = calcMult(splitted);
-  }
+  // if (hasMult) {
+  //   splitted = calcMult(splitted);
+  // }
 
-  if (hasDiv) {
-    splitted = calcMult(splitted);
-  }
+  // if (hasDiv) {
+  //   splitted = calcMult(splitted);
+  // }
 
 
   if (splitted !== undefined) {
@@ -141,9 +139,9 @@ var calcSections = function(section, indexes ) {
       }
     });
 
-    console.log("");
-    console.log("---->>> Splitted after mult");
-    console.log(splitted);
+    // console.log("");
+    // console.log("---->>> Splitted after mult");
+    // console.log(splitted);
 
     var res = numbers.reduce((a,b) => {
       var i = 0;
@@ -162,7 +160,7 @@ var calcSections = function(section, indexes ) {
       //   return a / b;
       // }
     });
-    console.log(res);
+    //console.log("BEFORE RETURNING --> ", res);
     return res;
   }
 }
@@ -186,43 +184,43 @@ var calcMult = function(splitted) {
         multRes *= splitted[i+1];
         if (splitted[i+2] && splitted[i+2] === "*") {
           while(splitted[i+2] === "*") {
-            console.log("");
-            console.log("Sharma");
+            // console.log("");
+            // console.log("Continue Multiplying");
             i += 2;
             multRes *= splitted[i+1];
             console.log(multRes);
           }
         }
         if (splitted[i+2] && splitted[i+2] !== "*") {
-          console.log("");
-          console.log("Dharba Sharwa");
+          // console.log("");
+          // console.log("Go to next operation");
           nextOp = splitted[i+2];
           nextOpInd = i+2;
           splitted[indMult[0]] = multRes;
           splitted = splitted.slice(0, indMult[0]+1).concat(splitted.slice(nextOpInd, splitted.length));
-          console.log(splitted);
+          //console.log(splitted);
           break;
         } else if (!splitted[i+2]) {
           splitted[indMult[0]] = multRes;
-          console.log(splitted.slice(0, indMult[0] + 1));
+          //console.log(splitted.slice(0, indMult[0] + 1));
           splitted = splitted.slice(0, indMult[0] + 1);
         }
       }
     };
 
-    if (splitted.includes("*")) {
-      console.log("");
-      console.log("contains: ")
-      console.log(splitted);
+    while (splitted.includes("*")) {
+      // console.log("");
+      // console.log("contains: ")
+      // console.log(splitted);
       //return splitted;
-      calcMult(splitted);
+      splitted = calcMult(splitted);
     }
-    else  {
-      console.log("HEREEEE!! ")
-      console.log(splitted);
-      calcSections(splitted.join(" "));
-      //return splitted;
-    }
+    //else  {
+      // console.log("HEREEEE!! ")
+      // console.log(splitted);
+      //return calcSections(splitted.join(" "));
+      return splitted;
+    //}
 
 }
 
@@ -273,6 +271,6 @@ var calcDiv = function(section) {
 //   console.log(splitted);
 // }
 
-const expression = "(2 / (2 + -(56 - 55) * 3.33 * 1 * 2 + 2 + 3 * 2) * 4) - -6 -(7 + 6)";
+const expression = "(2 / (2 + -(56 - 55) * 3.33 * (1 * 2 + 2) + 3 * 2) * 4) - -6 -(7 + 6)";
 
 calc(expression);
