@@ -2,30 +2,12 @@ var calc = function (exp) {
   const expCopy = exp;
   var test = detectParentheses(exp);
   console.log(test);
-
-  // let currentExp = exp;
-  // while (exp.includes("(")) {
-  //   console.log("\n");
-  //   console.log("EXP --> ", exp);
-  //   currentExp = exp;
-  //   exp = detectParentheses(exp);
-  //   console.log("After --> ", exp);
-  // }
-  // console.log("");
-  // console.log("Res");
-  // console.log(exp + " --line 23--- " + currentExp);
-  // while (exp.includes("*")) {
-  //   console.log("RES line 25 -->  ", calcMult(exp.split(" ")));
-  //   //exp = currentExp.replace("(" + exp + ")")
-  //   exp = calcMult(exp.split(" "));
-  //   console.log("exp: ")
-  //   console.log(exp);
-  // }
-
-  // exp = expCopy.replace("(" + currentExp + ")", calcSections(exp));
-  // console.log("FInale 30 --> ",exp);
-
-
+  test = detectParentheses(test);
+  console.log(test);
+  test = detectParentheses(test);
+  console.log(test);
+  test = calcSections(test);
+  console.log(test);
 }
 
 
@@ -52,14 +34,14 @@ var detectParentheses = function(exp) {
     if (exp[i] === "(") {
       if (countPar === 0) {
         start.push(i);
-      } else if (countPar > 1) {
+      } else if (countPar > 0) {
         start[start.length-1] = i;
+        console.log("UPDATED?");
       } if (countClose > 0) {
         countClose--;
       }
       countPar++;
-    }
-    if (exp[i] === ")") {
+    } else if (exp[i] === ")") {
         if (countClose === 0) {
           end.push(i);
           countClose++;
@@ -71,7 +53,7 @@ var detectParentheses = function(exp) {
   console.log(start, end);
 
 
-
+  // store inner array contents
   sections = start.length;
   for (i = 0; i < sections; i++) {
     content.push(exp.slice(start[i] + 1, end[i]));
@@ -82,7 +64,19 @@ var detectParentheses = function(exp) {
 
   // calculate each innermost Array and replace original array
   content.forEach(c => {
-    if (c.includes("*")) {
+    if (c.includes("*") && c.includes("/")) {
+      if (c.indexOf("*") < c.indexOf("/")) {
+        res = calcMult(c.split(" "));
+        res = calcDiv(res);
+      } else {
+        res = calcDiv(c.split(" "));
+        console.log("RIGHT FTER --> ", res);
+        res = calcMult(res);
+      }
+      res = calcSections(res);
+      exp = exp.replace("(" + c + ")", res);
+      console.log(res);
+    } else if (c.includes("*")) {
       res = calcMult(c.split(" "));
       res = calcSections(res);
       exp = exp.replace("(" + c + ")", res);
@@ -105,7 +99,8 @@ var detectParentheses = function(exp) {
 
 
 
-// function to calculate sections
+
+// function to calculate sections (+ and -)
 var calcSections = function(section) {
   var splitted;
   var numbers = [];
@@ -115,20 +110,6 @@ var calcSections = function(section) {
   } else {
     splitted = section;
   }
-  //console.log("Splitted line 117 --> ", splitted);
-
-
-  // make function for if has mult
-
-
-  // if (hasMult) {
-  //   splitted = calcMult(splitted);
-  // }
-
-  // if (hasDiv) {
-  //   splitted = calcMult(splitted);
-  // }
-
 
   if (splitted !== undefined) {
     splitted.forEach(e => {
@@ -139,9 +120,6 @@ var calcSections = function(section) {
       }
     });
 
-    // console.log("");
-    // console.log("---->>> Splitted after mult");
-    // console.log(splitted);
 
     var res = numbers.reduce((a,b) => {
       var i = 0;
@@ -152,15 +130,7 @@ var calcSections = function(section) {
         i++;
         return a - b;
       }
-      // else if (operations[i] === "*") {
-      //   i++;
-      //   return a * b;
-      // } else if (operations[i] === "/") {
-      //   i++;
-      //   return a / b;
-      // }
     });
-    //console.log("BEFORE RETURNING --> ", res);
     return res;
   }
 }
@@ -184,43 +154,30 @@ var calcMult = function(splitted) {
         multRes *= splitted[i+1];
         if (splitted[i+2] && splitted[i+2] === "*") {
           while(splitted[i+2] === "*") {
-            // console.log("");
-            // console.log("Continue Multiplying");
             i += 2;
             multRes *= splitted[i+1];
             console.log(multRes);
           }
         }
         if (splitted[i+2] && splitted[i+2] !== "*") {
-          // console.log("");
-          // console.log("Go to next operation");
           nextOp = splitted[i+2];
           nextOpInd = i+2;
           splitted[indMult[0]] = multRes;
           splitted = splitted.slice(0, indMult[0]+1).concat(splitted.slice(nextOpInd, splitted.length));
-          //console.log(splitted);
           break;
         } else if (!splitted[i+2]) {
           splitted[indMult[0]] = multRes;
-          //console.log(splitted.slice(0, indMult[0] + 1));
           splitted = splitted.slice(0, indMult[0] + 1);
         }
       }
     };
 
     while (splitted.includes("*")) {
-      // console.log("");
-      // console.log("contains: ")
-      // console.log(splitted);
-      //return splitted;
       splitted = calcMult(splitted);
     }
-    //else  {
-      // console.log("HEREEEE!! ")
-      // console.log(splitted);
-      //return calcSections(splitted.join(" "));
-      return splitted;
-    //}
+
+    return splitted;
+
 
 }
 
@@ -231,21 +188,25 @@ var calcMult = function(splitted) {
 
 
 // function to fin divisions and calculate them
-var calcDiv = function(section) {
+var calcDiv = function(splitted) {
+  console.log("INSIDE DIV:");
+  console.log(splitted);
   let indDiv = [];
-  let divRes = [];
+  let divRes = 1;
   let nextOp;
   let nextOpInd;
 
-  splitted.forEach((n,i) => {
+  for (let i = 0; i < splitted.length; i++)  {
+    var n = splitted[i];
       if (n === "/") {
         indDiv.push(i - 1);
         divRes = splitted[i-1];
-        divRes /= splitted[i+1];
+        divRes = divRes / splitted[i+1];
         if (splitted[i+2] && splitted[i+2] === "/") {
           while(splitted[i+2] === "/") {
             i += 2;
-            divRes /= splitted[i+1];
+            divRes = divRes / splitted[i+1];
+            console.log(divRes);
           }
         }
         if (splitted[i+2] && splitted[i+2] !== "/") {
@@ -253,13 +214,17 @@ var calcDiv = function(section) {
           nextOpInd = i+2;
           splitted[indDiv[0]] = divRes;
           splitted = splitted.slice(0, indDiv[0]+1).concat(splitted.slice(nextOpInd, splitted.length));
+          break;
         } else if (!splitted[i+2]) {
           splitted[indDiv[0]] = divRes;
-          console.log(splitted.slice(0, indDiv[0] + 1));
           splitted = splitted.slice(0, indDiv[0] + 1);
         }
       }
-    });
+    };
+
+    while (splitted.includes("/")) {
+      splitted = calcDiv(splitted);
+    }
 
     return splitted;
 }
